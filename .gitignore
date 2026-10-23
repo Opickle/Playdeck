@@ -1,0 +1,10 @@
+node_modules/
+release/
+dist/
+.pnpm-store/
+.electron-cache/
+.builder-cache/
+.localappdata/
+.tmp/
+.DS_Store
+Thumbs.db

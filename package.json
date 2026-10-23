@@ -1,0 +1,51 @@
+{
+  "name": "playdeck",
+  "version": "1.0.0",
+  "description": "Your games, videos and music. One beautiful home.",
+  "main": "src/main.js",
+  "author": "Opickle",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "pnpm run dist:app && pnpm run dist:setup",
+    "dist:dir": "electron-builder --win dir",
+    "dist:app": "electron-builder --win dir",
+    "dist:setup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.opickle.playdeck",
+    "productName": "Playdeck",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Playdeck-Setup-${version}.${ext}",
+      "icon": "assets/playdeck.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Playdeck",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}
