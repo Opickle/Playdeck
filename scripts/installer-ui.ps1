@@ -22,13 +22,16 @@ $install.Add_Click({
   $target=[Environment]::ExpandEnvironmentVariables($folder.Text.Trim());if([string]::IsNullOrWhiteSpace($target)){throw 'Choose an install folder first.'}
   if(Get-Process -Name Playdeck -ErrorAction SilentlyContinue){throw 'Please close Playdeck before installing or updating it.'}
   $install.Enabled=$false;$browse.Enabled=$false;$cancel.Enabled=$false;$folder.Enabled=$false;$status.Text='Setting up your space…';$form.Refresh()
-  if(Test-Path $target){$children=@(Get-ChildItem -LiteralPath $target -Force);if($children.Count -gt 0 -and -not(Test-Path (Join-Path $target '.playdeck-install'))){throw 'Choose an empty folder or an existing Playdeck install folder.'}}
+  $marker=Join-Path $target '.playdeck-install'
+  if(Test-Path $target){$children=@(Get-ChildItem -LiteralPath $target -Force);if($children.Count -gt 0 -and -not(Test-Path $marker)){throw 'Choose an empty folder or an existing Playdeck install folder.'};if(Test-Path $marker){Remove-Item -LiteralPath $target -Recurse -Force}}
   New-Item -ItemType Directory -Force -Path $target|Out-Null
-  [IO.Compression.ZipFile]::ExtractToDirectory((Join-Path $PSScriptRoot 'payload.zip'),$target,$true)
+  # Windows PowerShell 5.1 uses .NET Framework, whose ZipFile API has no overwrite overload.
+  # Replacing a marked Playdeck folder above makes the broadly supported two-argument call safe.
+  [IO.Compression.ZipFile]::ExtractToDirectory((Join-Path $PSScriptRoot 'payload.zip'),$target)
   $appExe=Join-Path $target 'Playdeck.exe';if(-not(Test-Path $appExe)){throw 'The app files could not be unpacked. Please try Setup again.'};Set-Content -LiteralPath (Join-Path $target '.playdeck-install') -Value '1.0.0' -Encoding ASCII
   $programs=[Environment]::GetFolderPath('Programs');$menu=Join-Path $programs 'Playdeck';New-Item -ItemType Directory -Force -Path $menu|Out-Null
   $ws=New-Object -ComObject WScript.Shell;$link=$ws.CreateShortcut((Join-Path $menu 'Playdeck.lnk'));$link.TargetPath=$appExe;$link.WorkingDirectory=$target;$link.IconLocation=$appExe+',0';$link.Save()
-  if($desktop.Checked){$link=$ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Playdeck.lnk'));$link.TargetPath=$appExe;$link.WorkingDirectory=$target;$link.IconLocation=$appExe+',0';$link.Save()}
+  if($desktop.Checked){$desktopPath=Join-Path ([Environment]::GetFolderPath('Desktop')) 'Playdeck.lnk';$link=$ws.CreateShortcut($desktopPath);$link.TargetPath=$appExe;$link.WorkingDirectory=$target;$link.IconLocation=$appExe+',0';$link.Save();if(-not(Test-Path $desktopPath)){throw 'Playdeck installed, but Windows could not create the desktop shortcut. You can still launch it from the Start menu.'}}
   $uninstaller=Join-Path $target 'uninstall.ps1'
   $uninstallText=@('$ErrorActionPreference = ''SilentlyContinue''','$root = $PSScriptRoot','Remove-Item -LiteralPath (Join-Path ([Environment]::GetFolderPath(''Programs'')) ''Playdeck'') -Recurse -Force','Remove-Item -LiteralPath (Join-Path ([Environment]::GetFolderPath(''Desktop'')) ''Playdeck.lnk'') -Force','Remove-Item -LiteralPath ''HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Playdeck'' -Recurse -Force','Start-Sleep -Seconds 2','if (Test-Path (Join-Path $root ''.playdeck-install'')) { Remove-Item -LiteralPath $root -Recurse -Force }')
   Set-Content -LiteralPath $uninstaller -Value ($uninstallText -join [Environment]::NewLine) -Encoding UTF8
@@ -39,3 +42,4 @@ $install.Add_Click({
  }catch{$install.Enabled=$true;$browse.Enabled=$true;$cancel.Enabled=$true;$folder.Enabled=$true;[Windows.Forms.MessageBox]::Show($_.Exception.Message,'Playdeck Setup','OK','Error')|Out-Null}
 })
 [void]$form.ShowDialog()
+
