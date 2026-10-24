@@ -10,7 +10,7 @@ A Windows desktop launcher for games, videos, music and apps. Playdeck keeps a p
 
 ## Build the Windows installer
 
-Run `pnpm dist`. This creates a standard per-user NSIS setup program at `release/Playdeck-Setup-1.0.2.exe`. The wizard lets people choose an install location and desktop shortcut, creates Start Menu and uninstall entries, and keeps library data if the app is removed. The installer does not require administrator access.
+Run `pnpm dist`. This creates a standard per-user NSIS setup program at `release/Playdeck-Setup-1.0.3.exe`. The wizard lets people choose an install location and desktop shortcut, creates Start Menu and uninstall entries, and keeps library data if the app is removed. The installer does not require administrator access.
 
 GitHub Actions also builds the installer after each push to `main`. Download the `Playdeck-Setup` artifact from the latest **Build Windows installer** workflow run.
 
