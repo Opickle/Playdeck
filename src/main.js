@@ -12,6 +12,7 @@ function createWindow() {
 }
 app.whenReady().then(() => {
   ipcMain.handle('store:read', readStore); ipcMain.handle('store:write', (_event, value) => writeStore(value));
+  ipcMain.handle('window:toggle-fullscreen', (event) => { const win = BrowserWindow.fromWebContents(event.sender); if (!win) return false; win.setFullScreen(!win.isFullScreen()); return win.isFullScreen(); });
   ipcMain.handle('dialog:pick', async (_event, type) => {
     const props = type === 'folder' ? ['openDirectory'] : ['openFile'];
     const filters = type === 'game' ? [{ name: 'Applications', extensions: ['exe', 'bat', 'cmd', 'lnk'] }] : type === 'video' ? [{ name: 'Video', extensions: ['mp4', 'mkv', 'mov', 'avi', 'webm', 'm4v'] }] : type === 'music' ? [{ name: 'Audio', extensions: ['mp3', 'flac', 'wav', 'm4a', 'aac', 'ogg', 'wma'] }] : [];
@@ -27,3 +28,4 @@ app.whenReady().then(() => {
   createWindow(); app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+
